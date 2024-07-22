@@ -20,5 +20,5 @@ public class TypeDocument  implements Serializable {
     private Long id;
 
     @Column(length = 255, nullable = false)
-    private String nome;
+    private String name;
 }

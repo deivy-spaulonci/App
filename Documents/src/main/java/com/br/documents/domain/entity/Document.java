@@ -20,14 +20,14 @@ public class Document implements Serializable {
     private Long id;
 
     @Column(length = 255, nullable = false)
-    private String descricao;
+    private String description;
 
     @Column(length = 255, nullable = false)
-    private String arquivo;
+    private String file;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "ID_TYPEDOCUMENT")
-    private TypeDocument typeDocuments;
+    private TypeDocument typeDocument;
 
 
 }
