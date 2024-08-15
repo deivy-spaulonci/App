@@ -3,11 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/metro-gray/easyui.css">
+    <link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/color.css">
+    <script type="text/javascript" src="https://www.jeasyui.com/easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.jeasyui.com/easyui/jquery.easyui.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        a{
+            text-decoration: none;
+        }
+        *{
+            font-size: 12px !important;
+            font-family: "Kode Mono", monospace;
+            text-decoration: none;
+        }
+        .display-table {
+             display: table;
+         }
+        .display-table > div {
+            display: table-row;
+        }
+        .display-table > div > div {
+            display: table-cell;
+            padding: 5px;
+            vertical-align: middle;
+        }
+        .bi{
+            font-size: 16px !important;
+        }
+    </style>
+
 </head>
 <body>
-    <h2>Documentos</h2>
+    <div class="easyui-layout" style="width:700px;height:350px;" data-options="fit:true">
+        <div data-options="region:'west',split:true,collapsible:false" title="Documentos" style="width:65%;">
+            <div class="easyui-tabs" style="width:100%;height:250px" fit="true">
+                <div title="Arquivos">
 
-    <iframe src="file:///aluguel_12_2010.pdf"    height="600px" width="800"></iframe>
+                    <table id="dg"  class="easyui-datagrid" style="width:100%;height:100%"
+                           url="/api/v1/documents/files" method="get" fit="true"
+                           toolbar="#toolbar" pagination="true" fitColumns="false"
+                           rownumbers="true" singleSelect="true">
+                        <thead>
+                        <tr>
+                            <th data-options="field:'name',width:400">Nome</th>
+                            <th data-options="field:'size',align:'right',width:150,formatter:formatSizeFile">Tamanho</th>
+                            <th data-options="field:'null',align:'center',width:80,formatter:formatLink">Documento</th>
+                        </tr>
+                        </thead>
+                    </table>
+
+                    <div id="toolbar">
+                        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newUser()">New User</a>
+                        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editUser()">Edit User</a>
+                        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyUser()">Remove User</a>
+                    </div>
+                </div>
+
+                <div title="Documentos" style="padding:10px">
+                    <div class="display-table" style="width: 100%">
+                        <div>
+                            <div>
+                                <input id="language" class="easyui-combobox" name="language" style="width:100%;" url="/api/v1/type_document"
+                                       method="get" label="Tipo:" labelPosition="left" data-options="valueField: 'id',textField: 'name'">
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <input class="easyui-textbox" label="Descrição:" labelPosition="left" multiline="true" style="width:100%;height:80px">
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <input class="easyui-textbox" label="Nome:" labelPosition="left" style="width:100%;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div data-options="region:'center'">
+            <iframe id="ifr" width="100%" height="100%"></iframe>
+        </div>
+    </div>
+
+    <div id="dlgRename" class="easyui-dialog" title="Renomear Arquivo"
+         data-options="modal:true,closed:true,closable:true"
+         style="width:500px;height:250px;padding:10px; text-align: center;">
+        <p id="oldName"></p>
+        <input id="newName" class="easyui-textbox" style="width:100%;" label="Novo Nome:" labelPosition="top"/>
+        <br/><br/>
+        <a href="#" onclick="$('#dlgRename').dialog('close');" class="easyui-linkbutton c5" style="width:48%;height:32px">
+            <i class="bi bi-x-square"></i> Cancelar</a>
+        <a href="#" onclick="renameFile()" class="easyui-linkbutton c1" style="width:48%;height:32px">
+            <i class="bi bi-check2-square"></i> Renomear</a>
+    </div>
+
+    <script type="text/javascript">
+        function formatSizeFile(val,row){
+            return (val/1024).toFixed(2) + ' mb'
+        }
+        function formatLink(val,row){
+            var nome = ''+row.name;
+            return "<a href='#' onclick='showRenameFile(\""+nome+"\")' class='easyui-linkbutton'><i class='bi bi-pencil-square'></i></a>";
+        }
+        function showRenameFile(oldName) {
+            $('#dlgRename').dialog('open');
+            $('#oldName').text(oldName);
+            $('#oldName').focus();
+        }
+        function renameFile(){
+            $.post("/api/v1/documents/renameFile", {oldName: $('#oldName').text(), newName: $('#newName').val() }, "json");
+            $('#dlgRename').dialog('close');
+        }
+
+        $(function () {
+            $('#dg').datagrid({
+                onDblClickRow: async function (index, row) {
+                    await fetch('/api/v1/documents/fileByName/' + row.name).then(resp =>{
+                        if(resp.ok){
+                            let extension = row.name.split('.').pop();
+                            if(['pdf', 'jpg', 'gif', 'jpeg'].indexOf(extension)!==-1){
+                                let dataApp = (extension === 'pdf' ? "data:application/pdf;base64,":"data:image/"+extension+";base64,")
+                                resp.text().then(data => $('#ifr').attr('src', dataApp + data));
+                            }
+                        }
+                    });
+                }
+            });
+
+        });
+        var url;
+        function newUser(){
+            // $('#dlg').dialog('open').dialog('center').dialog('setTitle','New User');
+            // $('#fm').form('clear');
+            // url = 'save_user.php';
+        }
+        function editUser(){
+            // var row = $('#dg').datagrid('getSelected');
+            // if (row){
+            //     $('#dlg').dialog('open').dialog('center').dialog('setTitle','Edit User');
+            //     $('#fm').form('load',row);
+            //     url = 'update_user.php?id='+row.id;
+            // }
+        }
+        function saveUser(){
+            // $('#fm').form('submit',{
+            //     url: url,
+            //     iframe: false,
+            //     onSubmit: function(){
+            //         return $(this).form('validate');
+            //     },
+            //     success: function(result){
+            //         var result = eval('('+result+')');
+            //         if (result.errorMsg){
+            //             $.messager.show({
+            //                 title: 'Error',
+            //                 msg: result.errorMsg
+            //             });
+            //         } else {
+            //             $('#dlg').dialog('close');        // close the dialog
+            //             $('#dg').datagrid('reload');    // reload the user data
+            //         }
+            //     }
+            // });
+        }
+        function destroyUser(){
+            // var row = $('#dg').datagrid('getSelected');
+            // if (row){
+            //     $.messager.confirm('Confirm','Are you sure you want to destroy this user?',function(r){
+            //         if (r){
+            //             $.post('destroy_user.php',{id:row.id},function(result){
+            //                 if (result.success){
+            //                     $('#dg').datagrid('reload');    // reload the user data
+            //                 } else {
+            //                     $.messager.show({    // show error message
+            //                         title: 'Error',
+            //                         msg: result.errorMsg
+            //                     });
+            //                 }
+            //             },'json');
+            //         }
+            //     });
+            // }
+        }
+    </script>
+
+</body>
+</html>
 
 
 </body>

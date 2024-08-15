@@ -18,7 +18,7 @@ public class DocumentDto implements Serializable{
     private Long id;
     @NotNull
     private String description;
-    private String file;
+    private String fileName;
     @NotNull
     private TypeDocument typeDocument;
 }

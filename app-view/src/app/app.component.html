@@ -1,0 +1,47 @@
+<!--<p-menubar [model]="items"/>-->
+<p-toolbar >
+  <div class="p-toolbar-group-start">
+    <p-button icon="pi pi-home" label="Home" class="mr-2" routerLink="/home"/>
+  </div>
+  <div class="p-toolbar-group-end">
+    <p-button icon="pi pi-align-justify" class="mr-2" (onClick)="sidebarVisible = true" />
+  </div>
+</p-toolbar>
+<router-outlet />
+<p-sidebar #sidebarRef [(visible)]="sidebarVisible" position="right">
+  <ng-template pTemplate="headless">
+    <div class="flex flex-column h-full">
+      <div class="flex align-items-right justify-content-between">
+        <span class="font-medium">
+          <p-button icon="pi pi-times" class="mr-2" (onClick)="sidebarVisible = false" />
+        </span>
+      </div>
+      <hr class="mb-3 mx-3 border-top-1 border-none surface-border" />
+      <div class="overflow-y-auto">
+        <ul class="list-none p-3 m-0">
+          <li>
+            <span class="font-medium">DOCUMENTOS</span>
+            <ul class="list-none p-0 m-0 overflow-hidden">
+              <li>
+                <a class="flex align-items-center cursor-pointer p-3 text-700 hover:surface-100" routerLink="/files">
+                  <i class="pi pi-copy mr-2"></i><span class="font-medium">Arquivos</span>
+                </a>
+              </li>
+              <li>
+                <a class="flex align-items-center cursor-pointer p-3 text-700 hover:surface-100" routerLink="/upload">
+                  <i class="pi pi-upload mr-2"></i><span class="font-medium">Upload</span>
+                </a>
+              </li>
+              <li>
+                <a class="flex align-items-center cursor-pointer p-3 text-700 hover:surface-100" routerLink="/documents">
+                  <i class="pi pi-file-o mr-2"></i><span class="font-medium">Documentos</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </ng-template>
+</p-sidebar>
+

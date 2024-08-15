@@ -1,0 +1,93 @@
+<p-panel header="Arquivos">
+  <div id="gridFiles">
+
+      <form id="formDoc">
+
+        <label for="cbType">Tipo Documento: </label>
+        <p-dropdown
+          id="cbType"
+          [ngModelOptions]="{standalone:true}"
+          [options]="types"
+          [(ngModel)]="document.typeDocument"
+          optionLabel="name"
+          placeholder="Selecione um tipo de Documento" />
+
+        <p-button label="Cadastrar"
+                  icon="pi pi-file-arrow-up"
+                  [disabled]="!selectedFile || !document.typeDocument || !document.description"
+                  (onClick)="addFileToDoc()"  [outlined]="true" />
+
+        <label for="descArea">Descrição: </label>
+
+        <textarea id="descArea"
+                  [(ngModel)]="document.description"
+                  [ngModelOptions]="{standalone:true}"
+                  rows="3" cols="30" pInputTextarea></textarea>
+
+      </form>
+
+      <iframe id="ifr"></iframe>
+
+      <p-table
+        [value]="files"
+        [scrollable]="true"
+        [(selection)]="selectedFile"
+        [contextMenu]="cm"
+        [(contextMenuSelection)]="selectedFile"
+        selectionMode="single"
+        scrollHeight="620px"
+        dataKey="name"
+        (onRowSelect)="showFile($event)"
+        styleClass="p-datatable-striped p-datatable-gridlines">
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="name">Nome <p-sortIcon field="name" /></th>
+            <th style="width: 120px;" pSortableColumn="size">Tamanho <p-sortIcon field="size" /></th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-file>
+          <tr [pSelectableRow]="file" [pContextMenuRow]="file">
+  <!--          <td>{{ file.name.length>40 ? ((file.name | slice:0:40)+'...') : file.name }}</td>-->
+            <td>{{file.name}}</td>
+            <td style="text-align: right;">
+              {{((file.size/1024)/1024).toFixed(2) + " mb"}}
+              <i *ngIf="file.name.split('.').pop()=='pdf'" class="pi pi-file-pdf"></i>
+              <i *ngIf="file.name.split('.').pop()!='pdf'" class="pi pi-file-o"></i>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+          <div style="text-align: center;">
+            Tamanho total: {{((totalSizeFiles/1024)/1024).toFixed(2)}} Mb
+            &nbsp;&nbsp; | &nbsp;&nbsp;  Qtd. arquivos: {{files ? files.length : undefined}}
+          </div>
+        </ng-template>
+      </p-table>
+
+  </div>
+</p-panel>
+
+<p-confirmDialog />
+<p-contextMenu #cm [model]="items" />
+<p-toast position="bottom-right" />
+<p-dialog *ngIf="selectedFile" header="Editar nome do arquivo" [modal]="true"
+          [(visible)]="showEditNameDialog" [style]="{ width: '50rem' }">
+  <h3>{{selectedFile.name}}</h3>
+  <p-inputGroup>
+    <input pInputText style="width: 100%;" [(ngModel)]="newName" (keyup.enter)="renameFile()"/>
+    <button type="button" pButton icon="pi pi-pencil" class="p-button-warning" (click)="checkWitheSpaces()"></button>
+  </p-inputGroup>
+
+  <p-divider></p-divider>
+  <div class="footerWinowBts">
+    <p-button label="Cancel" severity="secondary" (onClick)="showEditNameDialog = false" [style]="{width:'80%'}"/>
+    <p-button label="Save" (onClick)="renameFile()" [style]="{width:'80%'}"/>
+  </div>
+</p-dialog>
+
+<p-blockUI [blocked]="blockedDocument">
+  <i class="pi pi-cog" style="font-size: 3rem"></i>
+  &nbsp;&nbsp; arquivo(s) sendo carregado...
+</p-blockUI>
+
+

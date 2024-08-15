@@ -23,7 +23,7 @@ public class Document implements Serializable {
     private String description;
 
     @Column(length = 255, nullable = false)
-    private String file;
+    private String fileName;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "ID_TYPEDOCUMENT")
