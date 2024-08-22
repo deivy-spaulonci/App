@@ -31,9 +31,11 @@
       <p-table
         [value]="files"
         [scrollable]="true"
+        [sortOrder]="1"
         [(selection)]="selectedFile"
         [contextMenu]="cm"
         [(contextMenuSelection)]="selectedFile"
+        sortField="name"
         selectionMode="single"
         scrollHeight="620px"
         dataKey="name"
